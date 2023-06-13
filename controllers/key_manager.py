@@ -8,8 +8,6 @@ import json
 from PyQt5 import QtWidgets
 from Crypto import Random
 from cryptography.hazmat.primitives import serialization
-
-
 from resources.ui_Key_Manager import KeyManagerUI
 
 

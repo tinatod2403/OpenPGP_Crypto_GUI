@@ -1,2 +1,4 @@
-PyQt5
-CypherHDemo
+PyQt5~=5.15.9
+pycryptodome
+rsa~=4.9
+cryptography~=41.0.1
