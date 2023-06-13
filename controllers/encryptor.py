@@ -1,8 +1,12 @@
 from PyQt5 import QtWidgets
+from resources.ui_Encrypton import EncryptorUI
 
 
-class EncryptorWindow(QtWidgets.QDialog):
+class EncryptWindow(QtWidgets.QDialog):
     def __init__(self):
         super().__init__()
-        # Add your code for the Encryptor window here
-        self.resize(531, 531)
+        self.ui = EncryptorUI()
+        self.ui.setupUi(self)
+        self.resize(531, 700)
+
+
