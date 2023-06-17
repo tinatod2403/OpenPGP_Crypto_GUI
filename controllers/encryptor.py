@@ -1,4 +1,5 @@
 import base64
+import binascii
 import hashlib
 import json
 import os
@@ -81,7 +82,7 @@ class EncryptWindow(QtWidgets.QDialog):
                         message_sign_json = json.dumps(self.message_sign)
                         message_sign_bytes = message_sign_json.encode('utf-8')
                         padding_length = 8 - (len(message_sign_bytes) % 8)
-                        self.message_sign_bytes = message_sign_bytes + bytes([padding_length]) * padding_length
+                        self.message_sign_bytes = message_sign_bytes
                         print(self.message_sign_bytes)
                         self.ui.successLabel.setText("Successfully signed data.")
                     else:
