@@ -40,5 +40,13 @@
             "public_key": "-----BEGIN RSA PUBLIC KEY-----\nMIGJAoGBANDbJmnEyRsu+3enj7pybY2up4zKkJ5WQS5PeFEKEZ4HE9888AJD3z/N\n6hglawcJEL+V9cOYzIXWW8b9L5ymengHON0bG91Vo9UqX/PX9X6MbNE0OSiF/Re/\ni8KrOYMCo/jEsNS2q1z7iK67UqIsMoGyX/S8FFZvJkyvYD9oRF8jAgMBAAE=\n-----END RSA PUBLIC KEY-----\n",
             "public_key_ID": "4caf603f68445f23"
         }
+    },
+    {
+        "gg[0x513c6f3b]": {
+            "username": "gg",
+            "email": "gg",
+            "public_key": "-----BEGIN RSA PUBLIC KEY-----\nMIGJAoGBAIGrvYcMHIXfFCBWn3WWKy9VkDGu4xNQmeZvuOPsJai+JO0SI1gNG3bX\nkOponzep73LCtIAeaPLYfR5Cu1X2o127h65L1KKdQDZYadVWpFhq2wFspfdNprfS\nc+vERalR9CqJgL0uXRsn1RnAMSXwBwe/qiao09GJoQ9zTXVRPG87AgMBAAE=\n-----END RSA PUBLIC KEY-----\n",
+            "public_key_ID": "0f734d75513c6f3b"
+        }
     }
 ]

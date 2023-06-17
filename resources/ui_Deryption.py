@@ -87,9 +87,10 @@ class DecryptorUI(QtWidgets.QWidget):
 
         # Label for displaying verification messages
         self.verification_message_label = QtWidgets.QLabel("", DecryptorWindow)
-        self.verification_message_label.setFont(QtGui.QFont("Arial", 12))
-        self.verification_message_label.setGeometry(20, 340, 491, 30)
+        self.verification_message_label.setFont(QtGui.QFont("Arial", 10))
+        self.verification_message_label.setGeometry(20, 340, 491, 60)  # Increase the height to 60
         self.verification_message_label.setWordWrap(True)
+        self.verification_message_label.setStyleSheet("color: green;")
 
         self.save_original_button = QtWidgets.QPushButton("Save Original", DecryptorWindow)
         self.save_original_button.setGeometry(20, 400, 120, 30)
@@ -116,6 +117,11 @@ class DecryptorUI(QtWidgets.QWidget):
         self.decrypt_verify_button.setEnabled(True)
         self.decryption_message_label.setText("")
         self.verification_message_label.setText("")
+
+    def enable_verify(self):
+        palette = self.decryption_status_label.palette()
+        palette.setColor(QtGui.QPalette.WindowText, QtGui.QColor(0, 0, 0))
+        self.verification_status_label.setPalette(palette)
 
     def disable_widgets(self):
         self.decrypt_verify_button.setEnabled(False)

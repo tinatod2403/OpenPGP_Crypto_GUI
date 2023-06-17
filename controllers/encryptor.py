@@ -6,7 +6,8 @@ import os
 import zlib
 
 import rsa
-from Crypto.Cipher import CAST
+from Crypto.Cipher import CAST, DES3, AES
+from Crypto.Random import get_random_bytes
 from PyQt5 import QtWidgets
 from resources.ui_Encrypton import EncryptorUI
 from datetime import datetime
@@ -20,6 +21,7 @@ class EncryptWindow(QtWidgets.QDialog):
         self.resize(531, 700)
 
         self.message_sign = {}
+        self.message_encrypt = {}
         self.message_sign_bytes = None
         self.message_sign_radix64 = None
 
@@ -38,7 +40,7 @@ class EncryptWindow(QtWidgets.QDialog):
         self.file_output_directory = None
 
     def getDataAndStartEncrypt(self):
-        # self.isEncrypted = self.ui.checkbox_encrypt.isChecked()
+        self.isEncrypted = self.ui.checkbox_encrypt.isChecked()
         # if self.radio_button_triple_des.isChecked():
         #     self.encryptAlgorithm = "Triple DES"
         # else:
@@ -79,15 +81,29 @@ class EncryptWindow(QtWidgets.QDialog):
                         signature = rsa.sign(data_hash, private_key_original, 'SHA-1')
                         self.message_sign["messageDigest"] = signature.hex()
 
+                        # print("e")
+                        # print(value['public_key'])
+                        # is_valid = rsa.verify(data_hash, bytes.fromhex(self.message_sign["messageDigest"]), rsa.PublicKey.load_pkcs1(value['public_key']))
+                        #
+                        # if is_valid:
+                        #     print("Signature is valid.")
+                        # else:
+                        #     print("Signature is not valid.")
+
                         message_sign_json = json.dumps(self.message_sign)
                         message_sign_bytes = message_sign_json.encode('utf-8')
-                        padding_length = 8 - (len(message_sign_bytes) % 8)
+                        # padding_length = 8 - (len(message_sign_bytes) % 8)
+                        # self.message_sign_bytes = message_sign_bytes + bytes([padding_length]) * padding_length
                         self.message_sign_bytes = message_sign_bytes
                         print(self.message_sign_bytes)
                         self.ui.successLabel.setText("Successfully signed data.")
                     else:
                         self.ui.errorLabel.setText("Password incorect for private key")
                         return
+        else:
+            message_sign_json = json.dumps(self.message_sign)
+            message_sign_bytes = message_sign_json.encode('utf-8')
+            self.message_sign_bytes = message_sign_bytes
 
         file_name = os.path.basename(self.ui.file_path_input)
         self.file_output_directory = os.path.join(self.file_output_directory, file_name + ".sgn")
@@ -97,6 +113,41 @@ class EncryptWindow(QtWidgets.QDialog):
             asd = 123
             self.message_sign_bytes = zlib.compress(self.message_sign_bytes)
             self.ui.successLabel.setText(self.ui.successLabel.text() + "\n" + "Successfully zipped data")
+
+        if self.isEncrypted:
+            print(self.ui.radio_button_cast5.isChecked())
+            if self.ui.radio_button_cast5.isChecked():
+                key = get_random_bytes(16)
+                cipher = CAST.new(key, CAST.MODE_OPENPGP)
+                plaintext = self.message_sign_bytes
+                msg = cipher.encrypt(plaintext)
+                print("CAST: ", msg)
+
+                self.message_encrypt["message"] = msg.hex()
+                self.message_encrypt["sessionKey"] = self.encryptSessionKey(key)
+                self.message_encrypt["keyID_recipient"] = self.ui.dropdown_public_key.currentText()
+
+                message_sign_json = json.dumps(self.message_encrypt)
+                message_sign_bytes = message_sign_json.encode('utf-8')
+
+                # eiv = msg[:CAST.block_size + 2]
+                # ciphertext = msg[CAST.block_size + 2:]
+                # cipher = CAST.new(key, CAST.MODE_OPENPGP, eiv)
+                # print("original: ", cipher.decrypt(ciphertext))
+            else:
+                key = get_random_bytes(32)
+                cipher = AES.new(key, AES.MODE_EAX)
+
+                nonce = cipher.nonce
+                ciphertext, tag = cipher.encrypt_and_digest(self.message_sign_bytes)
+
+                cipher = AES.new(key, AES.MODE_EAX, nonce=nonce)
+                plaintext = cipher.decrypt(ciphertext)
+                try:
+                    cipher.verify(tag)
+                    print("The message is authentic:", plaintext)
+                except ValueError:
+                    print("Key incorrect or message corrupted")
 
         if self.isRadix64:
             message_sign_radix64_encode = base64.b64encode(self.message_sign_bytes)
@@ -133,3 +184,18 @@ class EncryptWindow(QtWidgets.QDialog):
             return kljuc
         except ValueError as e:
             return None
+
+    def encryptSessionKey(self, sessionKey):
+        keyID_recipient = self.ui.dropdown_public_key.currentText()
+        print(keyID_recipient)
+        with open('publicKeyRing.json', 'r') as file:
+            publicKeyRing = json.load(file)
+            for item in publicKeyRing:
+                if keyID_recipient in item:
+                    public_key_pem = item[keyID_recipient]["public_key"]
+        public_key = rsa.PublicKey.load_pkcs1(public_key_pem)
+        print(public_key)
+        data = sessionKey
+        encrypted_sessionKey = rsa.encrypt(data, public_key)
+
+        return encrypted_sessionKey
