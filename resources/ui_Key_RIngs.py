@@ -104,7 +104,7 @@ class KeyRingsUI(object):
     def populate_table(self, table, data):
         table.setRowCount(len(data))
         for row, item in enumerate(data):
-            key = list(item.keys())[0]  # Get the key of the dictionary
+            key = list(item.keys())[0]
             values = item[key]
 
             username = values.get('username', '')

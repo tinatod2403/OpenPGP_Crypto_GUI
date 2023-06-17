@@ -32,5 +32,13 @@
             "public_key": "-----BEGIN RSA PUBLIC KEY-----\nMIGJAoGBAIPnc4hqYaVVLxqXxCXUukWJZ0Gd1tA0hXNr82xLxl6RO++EqGY+9dsN\nkrAnrTUxnbbCCFSXQalX5TStRM7MT6N/NtiUAh+PWaD3MQtC4vV9UAJ5YVWTPCTb\nIwVzspdROWObAXVjR1MacukcKMgVAlXJ9yzTBCPBbyImGBP6uiwzAgMBAAE=\n-----END RSA PUBLIC KEY-----\n",
             "public_key_ID": "22261813faba2c33"
         }
+    },
+    {
+        "asd[0x68445f23]": {
+            "username": "asd",
+            "email": "asd",
+            "public_key": "-----BEGIN RSA PUBLIC KEY-----\nMIGJAoGBANDbJmnEyRsu+3enj7pybY2up4zKkJ5WQS5PeFEKEZ4HE9888AJD3z/N\n6hglawcJEL+V9cOYzIXWW8b9L5ymengHON0bG91Vo9UqX/PX9X6MbNE0OSiF/Re/\ni8KrOYMCo/jEsNS2q1z7iK67UqIsMoGyX/S8FFZvJkyvYD9oRF8jAgMBAAE=\n-----END RSA PUBLIC KEY-----\n",
+            "public_key_ID": "4caf603f68445f23"
+        }
     }
 ]
