@@ -28,7 +28,7 @@ class EncryptorUI(object):
         self.label_algorithm.move(20, 60)
 
         # Radio Buttons - Triple DES and CAST5
-        self.radio_button_triple_des = QRadioButton("Triple DES", EncryptorWindow)
+        self.radio_button_triple_des = QRadioButton("AES128", EncryptorWindow)
         self.radio_button_triple_des.setFont(QtGui.QFont("Arial", 12))
         self.radio_button_triple_des.move(20, 90)
         self.radio_button_triple_des.setChecked(True)
@@ -161,6 +161,19 @@ class EncryptorUI(object):
 
         self.checkbox_encrypt.stateChanged.connect(self.toggle_encrypt_decript_options)
         self.checkbox_sign.stateChanged.connect(self.toggle_encrypt_decript_options)
+
+        self.back_button = QtWidgets.QPushButton("Back", EncryptorWindow)
+        self.back_button.setStyleSheet("background-color: black; color: white;")
+        self.back_button.setFont(QtGui.QFont("Arial", 12))
+        self.back_button.setGeometry(430, 640, 90, 30)
+
+        self.back_button.clicked.connect(lambda: self.backtoStart(EncryptorWindow))
+
+    def backtoStart(self, EncryptorWindow):
+        from controllers.start_menu import StartMenu
+        EncryptorWindow.hide()
+        startMenu = StartMenu()
+        startMenu.exec_()
 
     def toggle_encrypt_options(self, state):
         encrypt_enabled = state == QtCore.Qt.Checked

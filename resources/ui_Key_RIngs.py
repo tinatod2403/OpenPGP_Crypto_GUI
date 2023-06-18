@@ -5,7 +5,8 @@ import rsa
 from Crypto.Cipher import CAST
 from Crypto import Random
 
-from PyQt5 import QtWidgets, QtCore
+from PyQt5 import QtWidgets, QtCore, QtGui
+from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import QFileDialog, QVBoxLayout, QDialog, QLabel, QLineEdit, QPushButton, QHBoxLayout
 from cryptography.hazmat.primitives import serialization
 
@@ -21,13 +22,15 @@ class KeyRingsUI(object):
         KeyRingWindow.setWindowTitle("Key Rings")
 
         self.backButton = QtWidgets.QPushButton("Back", KeyRingWindow)
-        self.backButton.setGeometry(QtCore.QRect(10, 640, 80, 30))
+        self.backButton.setGeometry(QtCore.QRect(430, 640, 80, 30))
         self.backButton.setStyleSheet("background-color: black; color: white;")
+        self.backButton.setFont(QtGui.QFont("Arial", 12))
 
         # Create the public key label
         self.publicKeyLabel = QtWidgets.QLabel("PUBLIC KEY RING", KeyRingWindow)
         self.publicKeyLabel.setGeometry(QtCore.QRect(10, 10, 511, 30))
         self.publicKeyLabel.setAlignment(QtCore.Qt.AlignCenter)
+        self.publicKeyLabel.setFont(QtGui.QFont("Arial", 12))
 
         # Create the public key table
         self.publicKeyTable = QtWidgets.QTableWidget(KeyRingWindow)
@@ -41,15 +44,19 @@ class KeyRingsUI(object):
         # Create the public key buttons
         self.publicKeyDeleteButton = QtWidgets.QPushButton("Delete", KeyRingWindow)
         self.publicKeyDeleteButton.setGeometry(QtCore.QRect(10, 260, 80, 30))
+        self.publicKeyDeleteButton.setFont(QtGui.QFont("Arial", 12))
         self.publicKeyExportButton = QtWidgets.QPushButton("Export", KeyRingWindow)
         self.publicKeyExportButton.setGeometry(QtCore.QRect(100, 260, 80, 30))
+        self.publicKeyExportButton.setFont(QtGui.QFont("Arial", 12))
         self.publicKeyImportButton = QtWidgets.QPushButton("Import", KeyRingWindow)
         self.publicKeyImportButton.setGeometry(QtCore.QRect(190, 260, 80, 30))
+        self.publicKeyImportButton.setFont(QtGui.QFont("Arial", 12))
 
         # Create the private key label
         self.privateKeyLabel = QtWidgets.QLabel("PRIVATE KEY RING", KeyRingWindow)
         self.privateKeyLabel.setGeometry(QtCore.QRect(10, 290, 511, 30))
         self.privateKeyLabel.setAlignment(QtCore.Qt.AlignCenter)
+        self.privateKeyLabel.setFont(QtGui.QFont("Arial", 12))
 
         # Create the private key table
         self.privateKeyTable = QtWidgets.QTableWidget(KeyRingWindow)
@@ -63,14 +70,18 @@ class KeyRingsUI(object):
         # Create the private key buttons
         self.privateKeyDeleteButton = QtWidgets.QPushButton("Delete", KeyRingWindow)
         self.privateKeyDeleteButton.setGeometry(QtCore.QRect(10, 540, 80, 30))
+        self.privateKeyDeleteButton.setFont(QtGui.QFont("Arial", 12))
         self.privateKeyExportButton = QtWidgets.QPushButton("Export", KeyRingWindow)
         self.privateKeyExportButton.setGeometry(QtCore.QRect(100, 540, 80, 30))
+        self.privateKeyExportButton.setFont(QtGui.QFont("Arial", 12))
         self.privateKeyImportButton = QtWidgets.QPushButton("Import", KeyRingWindow)
         self.privateKeyImportButton.setGeometry(QtCore.QRect(190, 540, 80, 30))
+        self.privateKeyImportButton.setFont(QtGui.QFont("Arial", 12))
 
         # Create the generate new key pair button
         self.generateKeyButton = QtWidgets.QPushButton("Generate new pair key", KeyRingWindow)
         self.generateKeyButton.setGeometry(QtCore.QRect(10, 590, 200, 30))
+        self.generateKeyButton.setFont(QtGui.QFont("Arial", 12))
 
         self.publicKeyExportButton.clicked.connect(lambda: self.export_key("public"))
         self.publicKeyDeleteButton.clicked.connect(lambda: self.delete_key("public"))
@@ -83,6 +94,7 @@ class KeyRingsUI(object):
         self.errorLabel = QtWidgets.QLabel("", KeyRingWindow)
         self.errorLabel.setGeometry(QtCore.QRect(50, 565, 300, 30))
         self.errorLabel.setStyleSheet("color: red;")
+        self.errorLabel.setFont(QtGui.QFont("Arial", 12))
 
         if os.path.exists('publicKeyRing.json'):
             self.load_data()
@@ -417,12 +429,18 @@ class ImportDialog(QDialog):
 
         self.setWindowTitle("Import Key")
         self.username_label = QLabel("Username:")
+        self.username_label.setFont(QFont("Arial", 12))
         self.username_line_edit = QLineEdit()
+        self.username_line_edit.setFont(QFont("Arial", 12))
         self.email_label = QLabel("Email:")
+        self.email_label.setFont(QFont("Arial", 12))
         self.email_line_edit = QLineEdit()
+        self.email_line_edit.setFont(QFont("Arial", 12))
         self.import_button = QPushButton("Import")
+        self.import_button.setFont(QFont("Arial", 12))
         self.error_label = QLabel()
         self.error_label.setStyleSheet("color: red")
+        self.error_label.setFont(QFont("Arial", 12))
 
         layout = QVBoxLayout()
         layout.addWidget(self.username_label)
@@ -455,10 +473,14 @@ class PrivateKeyPassDialog(QDialog):
 
         self.setWindowTitle("Export private key")
         self.password_label = QLabel("Password:")
+        self.password_label.setFont(QtGui.QFont("Arial", 12))
         self.password_line_edit = QLineEdit()
+        self.password_line_edit.setFont(QtGui.QFont("Arial", 12))
         self.export_button = QPushButton("Done")
+        self.export_button.setFont(QtGui.QFont("Arial", 12))
         self.error_label = QLabel()
         self.error_label.setStyleSheet("color: red")
+        self.error_label.setFont(QtGui.QFont("Arial", 12))
 
         layout = QVBoxLayout()
         layout.addWidget(self.password_label)
@@ -485,14 +507,22 @@ class ImportDialogPrivate(QDialog):
 
         self.setWindowTitle("Import Key")
         self.username_label = QLabel("Username:")
+        self.username_label.setFont(QtGui.QFont("Arial", 12))
         self.username_line_edit = QLineEdit()
+        self.username_line_edit.setFont(QtGui.QFont("Arial", 12))
         self.email_label = QLabel("Email:")
+        self.email_label.setFont(QtGui.QFont("Arial", 12))
         self.email_line_edit = QLineEdit()
+        self.email_line_edit.setFont(QtGui.QFont("Arial", 12))
         self.password_label = QLabel("Password:")
+        self.password_label.setFont(QtGui.QFont("Arial", 12))
         self.password_line_edit = QLineEdit()
+        self.password_line_edit.setFont(QtGui.QFont("Arial", 12))
         self.import_button = QPushButton("Import")
+        self.import_button.setFont(QtGui.QFont("Arial", 12))
         self.error_label = QLabel()
         self.error_label.setStyleSheet("color: red")
+        self.error_label.setFont(QtGui.QFont("Arial", 12))
 
         layout = QVBoxLayout()
         layout.addWidget(self.username_label)

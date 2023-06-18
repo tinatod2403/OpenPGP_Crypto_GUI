@@ -1,5 +1,5 @@
 from PyQt5 import QtWidgets, QtGui
-from PyQt5.QtWidgets import QFileDialog
+from PyQt5.QtWidgets import QFileDialog, QDialog, QVBoxLayout, QLabel, QLineEdit, QDialogButtonBox
 
 
 class DecryptorUI(QtWidgets.QWidget):
@@ -72,14 +72,21 @@ class DecryptorUI(QtWidgets.QWidget):
 
         # Label for displaying decryption messages
         self.decryption_message_label = QtWidgets.QLabel("", DecryptorWindow)
-        self.decryption_message_label.setFont(QtGui.QFont("Arial", 12))
+        self.decryption_message_label.setFont(QtGui.QFont("Arial", 10))
         self.decryption_message_label.setGeometry(20, 260, 491, 30)
         self.decryption_message_label.setWordWrap(True)
+        self.decryption_message_label.setStyleSheet("color: green;")
+
+        self.decryption_error_message_label = QtWidgets.QLabel("", DecryptorWindow)
+        self.decryption_error_message_label.setFont(QtGui.QFont("Arial", 10))
+        self.decryption_error_message_label.setGeometry(20, 260, 491, 30)
+        self.decryption_error_message_label.setWordWrap(True)
+        self.decryption_error_message_label.setStyleSheet("color: red;")
 
         # Label: "Verification status:"
         self.verification_status_label = QtWidgets.QLabel("Verification status:", DecryptorWindow)
         self.verification_status_label.setFont(QtGui.QFont("Arial", 12))
-        self.verification_status_label.setGeometry(20, 300, 491, 30)
+        self.verification_status_label.setGeometry(20, 320, 491, 30)
 
         palette = self.decryption_status_label.palette()
         palette.setColor(QtGui.QPalette.WindowText, QtGui.QColor(0, 0, 0, 128))
@@ -88,17 +95,41 @@ class DecryptorUI(QtWidgets.QWidget):
         # Label for displaying verification messages
         self.verification_message_label = QtWidgets.QLabel("", DecryptorWindow)
         self.verification_message_label.setFont(QtGui.QFont("Arial", 10))
-        self.verification_message_label.setGeometry(20, 340, 491, 60)  # Increase the height to 60
+        self.verification_message_label.setGeometry(20, 360, 491, 60)  # Increase the height to 60
         self.verification_message_label.setWordWrap(True)
         self.verification_message_label.setStyleSheet("color: green;")
 
+        self.verification_error_message_label = QtWidgets.QLabel("", DecryptorWindow)
+        self.verification_error_message_label.setFont(QtGui.QFont("Arial", 10))
+        self.verification_error_message_label.setGeometry(20, 360, 491, 60)  # Increase the height to 60
+        self.verification_error_message_label.setWordWrap(True)
+        self.verification_error_message_label.setStyleSheet("color: red;")
+
         self.save_original_button = QtWidgets.QPushButton("Save Original", DecryptorWindow)
-        self.save_original_button.setGeometry(20, 400, 120, 30)
+        self.save_original_button.setGeometry(20, 440, 120, 30)
         self.save_original_button.setFont(QtGui.QFont("Arial", 12))
-        self.save_original_button.clicked.connect(self.save_original)
+        self.save_original_button.clicked.connect(lambda: self.save_original(DecryptorWindow))
+
+        self.warning_label = QtWidgets.QLabel("", DecryptorWindow)
+        self.warning_label.setGeometry(20, 480, 491, 30)
+        self.warning_label.setFont(QtGui.QFont("Arial", 12))
+        self.warning_label.setStyleSheet("background-color: rgb(255, 0, 0, 0);")
+
+        self.back_button = QtWidgets.QPushButton("Back", DecryptorWindow)
+        self.back_button.setStyleSheet("background-color: black; color: white;")
+        self.back_button.setFont(QtGui.QFont("Arial", 12))
+        self.back_button.setGeometry(430, 520, 90, 30)
+
+        self.back_button.clicked.connect(lambda: self.backtoStart(DecryptorWindow))
 
         # Disable widgets and button initially
         self.disable_widgets()
+
+    def backtoStart(self, DecryptorWindow):
+        from controllers.start_menu import StartMenu
+        DecryptorWindow.hide()
+        startMenu = StartMenu()
+        startMenu.exec_()
 
     def choose_file(self, DecryptorWindow):
         self.file_path_input, _ = QtWidgets.QFileDialog.getOpenFileName(DecryptorWindow, "Choose File")
@@ -110,8 +141,8 @@ class DecryptorUI(QtWidgets.QWidget):
     def decrypt_verify_file(self, DecryptorWindow):
         DecryptorWindow.decrypt_verify_file()
 
-    def save_original(self):
-        pass
+    def save_original(self, DecryptorWindow):
+        DecryptorWindow.saveOriginalMess()
 
     def enable_widgets(self):
         self.decrypt_verify_button.setEnabled(True)
@@ -122,9 +153,48 @@ class DecryptorUI(QtWidgets.QWidget):
         palette = self.decryption_status_label.palette()
         palette.setColor(QtGui.QPalette.WindowText, QtGui.QColor(0, 0, 0))
         self.verification_status_label.setPalette(palette)
+        self.save_original_button.setEnabled(True)
+
+    def enable_decrypt(self):
+        palette = self.decryption_status_label.palette()
+        palette.setColor(QtGui.QPalette.WindowText, QtGui.QColor(0, 0, 0))
+        self.decryption_status_label.setPalette(palette)
+        self.save_original_button.setEnabled(True)
 
     def disable_widgets(self):
         self.decrypt_verify_button.setEnabled(False)
         self.decryption_status_label.setStyleSheet("background-color: rgba(255, 255, 255, 0.5);")
         self.verification_status_label.setStyleSheet("background-color: rgba(255, 255, 255, 0.5);")
         self.save_original_button.setEnabled(False)
+
+    def enableWarning(self, text):
+        self.warning_label.setText(text)
+        self.warning_label.setStyleSheet("background-color: rgb(255, 0, 0, 128);")
+
+    def disableWarning(self):
+        print("t")
+        self.warning_label.setText("")
+        self.warning_label.setStyleSheet("background-color: rgb(255, 0, 0, 0);")
+
+
+class PasswordDialog(QDialog):
+    def __init__(self):
+        super().__init__()
+
+    def setupUI(self, userID):
+        self.setWindowTitle("Private Key Password")
+        self.layout = QVBoxLayout()
+        self.label = QLabel("This message is encrypted. Please enter the password for: " + userID)
+        self.label.setFont(QtGui.QFont("Arial", 12))
+        self.textbox = QLineEdit()
+        self.button_box = QDialogButtonBox(QDialogButtonBox.Ok)
+        self.button_box.accepted.connect(self.accept)
+        self.errorlabel = QLabel("")
+        self.errorlabel.setFont(QtGui.QFont("Arial", 12))
+        self.errorlabel.setStyleSheet("color:red")
+
+        self.layout.addWidget(self.label)
+        self.layout.addWidget(self.textbox)
+        self.layout.addWidget(self.button_box)
+        self.layout.addWidget(self.errorlabel)
+        self.setLayout(self.layout)

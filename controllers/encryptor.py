@@ -108,14 +108,8 @@ class EncryptWindow(QtWidgets.QDialog):
         file_name = os.path.basename(self.ui.file_path_input)
         self.file_output_directory = os.path.join(self.file_output_directory, file_name + ".sgn")
 
-        if self.isZipped:
-            asd = "asd"
-            asd = 123
-            self.message_sign_bytes = zlib.compress(self.message_sign_bytes)
-            self.ui.successLabel.setText(self.ui.successLabel.text() + "\n" + "Successfully zipped data")
 
         if self.isEncrypted:
-            print(self.ui.radio_button_cast5.isChecked())
             if self.ui.radio_button_cast5.isChecked():
                 key = get_random_bytes(16)
                 cipher = CAST.new(key, CAST.MODE_OPENPGP)
@@ -124,11 +118,13 @@ class EncryptWindow(QtWidgets.QDialog):
                 print("CAST: ", msg)
 
                 self.message_encrypt["message"] = msg.hex()
-                self.message_encrypt["sessionKey"] = self.encryptSessionKey(key)
+                self.message_encrypt["sessionKey"] = self.encryptSessionKey(key).hex()
                 self.message_encrypt["keyID_recipient"] = self.ui.dropdown_public_key.currentText()
 
+                print(self.message_encrypt)
                 message_sign_json = json.dumps(self.message_encrypt)
-                message_sign_bytes = message_sign_json.encode('utf-8')
+                self.message_sign_bytes = message_sign_json.encode('utf-8')
+                self.ui.successLabel.setText(self.ui.successLabel.text() + "\n" + "Successfully encrypted data using CAST5")
 
                 # eiv = msg[:CAST.block_size + 2]
                 # ciphertext = msg[CAST.block_size + 2:]
@@ -137,17 +133,34 @@ class EncryptWindow(QtWidgets.QDialog):
             else:
                 key = get_random_bytes(32)
                 cipher = AES.new(key, AES.MODE_EAX)
-
                 nonce = cipher.nonce
                 ciphertext, tag = cipher.encrypt_and_digest(self.message_sign_bytes)
+                print("The message is ciphertext:", ciphertext)
 
-                cipher = AES.new(key, AES.MODE_EAX, nonce=nonce)
-                plaintext = cipher.decrypt(ciphertext)
-                try:
-                    cipher.verify(tag)
-                    print("The message is authentic:", plaintext)
-                except ValueError:
-                    print("Key incorrect or message corrupted")
+                self.message_encrypt["message"] = ciphertext.hex()
+                self.message_encrypt["sessionKey"] = self.encryptSessionKey(key).hex()
+                self.message_encrypt["keyID_recipient"] = self.ui.dropdown_public_key.currentText()
+                self.message_encrypt["nonce"] = nonce.hex()
+                print(self.message_encrypt)
+
+                message_sign_json = json.dumps(self.message_encrypt)
+                self.message_sign_bytes = message_sign_json.encode('utf-8')
+                self.ui.successLabel.setText(self.ui.successLabel.text() + "\n" + "Successfully encrypted data using AES128")
+
+                # cipher = AES.new(key, AES.MODE_EAX, nonce=nonce)
+                # plaintext = cipher.decrypt(ciphertext)
+                # print("The message is plaintext:", plaintext)
+                # try:
+                #     cipher.verify(tag)
+                #     print("The message is authentic:", plaintext)
+                # except ValueError:
+                #     print("Key incorrect or message corrupted")
+
+        if self.isZipped:
+            asd = "asd"
+            asd = 123
+            self.message_sign_bytes = zlib.compress(self.message_sign_bytes)
+            self.ui.successLabel.setText(self.ui.successLabel.text() + "\n" + "Successfully zipped data")
 
         if self.isRadix64:
             message_sign_radix64_encode = base64.b64encode(self.message_sign_bytes)
@@ -187,14 +200,14 @@ class EncryptWindow(QtWidgets.QDialog):
 
     def encryptSessionKey(self, sessionKey):
         keyID_recipient = self.ui.dropdown_public_key.currentText()
-        print(keyID_recipient)
+        # print(keyID_recipient)
         with open('publicKeyRing.json', 'r') as file:
             publicKeyRing = json.load(file)
             for item in publicKeyRing:
                 if keyID_recipient in item:
                     public_key_pem = item[keyID_recipient]["public_key"]
         public_key = rsa.PublicKey.load_pkcs1(public_key_pem)
-        print(public_key)
+        # print(public_key)
         data = sessionKey
         encrypted_sessionKey = rsa.encrypt(data, public_key)
 
