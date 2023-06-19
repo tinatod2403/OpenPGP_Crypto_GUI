@@ -13,7 +13,8 @@ from cryptography.hazmat.primitives import serialization
 
 class KeyRingsUI(object):
     def __init__(self):
-        self.errorLabel = None
+        self.errorLabelPrivate = None
+        self.errorLabelPublic = None
         self.data = None
 
     def setupUi(self, KeyRingWindow):
@@ -91,10 +92,15 @@ class KeyRingsUI(object):
         self.privateKeyDeleteButton.clicked.connect(lambda: self.delete_key("private"))
         self.privateKeyImportButton.clicked.connect(self.import_key_private)
 
-        self.errorLabel = QtWidgets.QLabel("", KeyRingWindow)
-        self.errorLabel.setGeometry(QtCore.QRect(50, 565, 300, 30))
-        self.errorLabel.setStyleSheet("color: red;")
-        self.errorLabel.setFont(QtGui.QFont("Arial", 12))
+        self.errorLabelPrivate = QtWidgets.QLabel("", KeyRingWindow)
+        self.errorLabelPrivate.setGeometry(QtCore.QRect(50, 565, 300, 30))
+        self.errorLabelPrivate.setStyleSheet("color: red;")
+        self.errorLabelPrivate.setFont(QtGui.QFont("Arial", 12))
+
+        self.errorLabelPublic = QtWidgets.QLabel("", KeyRingWindow)
+        self.errorLabelPublic.setGeometry(QtCore.QRect(50, 565, 300, 30))
+        self.errorLabelPublic.setStyleSheet("color: red;")
+        self.errorLabelPublic.setFont(QtGui.QFont("Arial", 12))
 
         if os.path.exists('publicKeyRing.json'):
             self.load_data()
@@ -155,6 +161,7 @@ class KeyRingsUI(object):
         return private_key_encrypted.hex()
 
     def import_key_private(self):
+        self.reset_errors()
         file_dialog = QFileDialog()
         file_path, _ = file_dialog.getOpenFileName(None, "Select PEM File", "", "PEM Files (*.pem)")
 
@@ -165,16 +172,24 @@ class KeyRingsUI(object):
                 pem_data = file.read()
                 print(pem_data)
 
-                private_key = serialization.load_pem_private_key(pem_data, password=None)
-                public_key = private_key.public_key()
+                try:
+                    private_key = serialization.load_pem_private_key(pem_data, password=None)
+                    public_key = private_key.public_key()
 
-                n = public_key.public_numbers().n
-                e = public_key.public_numbers().e
+                    n = public_key.public_numbers().n
+                    e = public_key.public_numbers().e
 
-                public_key_original = rsa.key.PublicKey(n, e)
+                    public_key_original = rsa.key.PublicKey(n, e)
+                except Exception:
+                    self.errorLabelPrivate.setText("PRIVATE key not in right format.")
+                    return
+                self.errorLabelPrivate.setText("")
                 print(public_key_original)
 
                 keyId = (hex(n)[2:])[-16:]
+                if self.keyAlreadyExists("private",keyId):
+                    self.errorLabelPrivate.setText("Private key already exists.")
+                    return
 
                 dialog = ImportDialogPrivate()
                 if dialog.exec_() == QDialog.Accepted:
@@ -209,6 +224,7 @@ class KeyRingsUI(object):
 
     def import_key_public(self):
 
+        self.reset_errors()
         file_dialog = QFileDialog()
         file_path, _ = file_dialog.getOpenFileName(None, "Select PEM File", "", "PEM Files (*.pem)")
 
@@ -218,14 +234,23 @@ class KeyRingsUI(object):
             with open(file_path, "rb") as file:
                 pem_data = file.read()
             print(pem_data)
-            public_key = serialization.load_pem_public_key(pem_data)
+            try:
+                public_key = serialization.load_pem_public_key(pem_data)
 
-            n = public_key.public_numbers().n
-            e = public_key.public_numbers().e
+                n = public_key.public_numbers().n
+                e = public_key.public_numbers().e
 
-            public_key_original = rsa.key.PublicKey(n, e)
+                public_key_original = rsa.key.PublicKey(n, e)
+            except Exception:
+                    self.errorLabelPublic.setText("PUBLIC key not in right format.")
+                    return
+
+            self.errorLabelPublic.setText("")
 
             keyId = (hex(n)[2:])[-16:]
+            if self.keyAlreadyExists("public", keyId):
+                self.errorLabelPrivate.setText("Public key already exists.")
+                return
             print(keyId)
 
             dialog = ImportDialog()
@@ -262,7 +287,32 @@ class KeyRingsUI(object):
         else:
             print("File selection canceled.")
 
+    def keyAlreadyExists(self,type,keyId):
+        if type == "public":
+            with open('publicKeyRing.json', 'r') as file:
+                publicKeyRing = json.load(file)
+                for key, item in enumerate(publicKeyRing):
+                    key = list(item.values())[0]
+                    print(keyId)
+                    if key['public_key_ID'] == keyId:
+                        return True
+        else:
+            with open('privateKeyRing.json', 'r') as file:
+                privateKeyRing = json.load(file)
+                for key, item in enumerate(privateKeyRing):
+                    key = list(item.values())[0]
+                    print(keyId)
+                    if key['public_key_ID'] == keyId:
+                        return True
+
+    def reset_errors(self):
+        self.errorLabelPublic.setText("")
+        self.errorLabelPrivate.setText("")
+
+
     def passwordCorrect(self, private_key, password):
+
+        self.reset_errors()
         password_bytes = password.encode('utf-8')
 
         sha1_hash = hashlib.sha1()
@@ -285,6 +335,8 @@ class KeyRingsUI(object):
             return False
 
     def delete_key(self, keyType):
+
+        self.reset_errors()
         if keyType == "public":
             table = self.publicKeyTable
         else:
@@ -325,7 +377,7 @@ class KeyRingsUI(object):
                                 self.data.remove(item)
                                 break
                     else:
-                        self.errorLabel.setText("Incorect password for: " + username)
+                        self.errorLabelPrivate.setText("Incorect password for: " + username)
 
         if keyType == "public":
             with open('publicKeyRing.json', "w") as file:
@@ -360,6 +412,7 @@ class KeyRingsUI(object):
 
     def export_key(self, keyType):
 
+        self.reset_errors()
         if keyType == "public":
             table = self.publicKeyTable
         else:
@@ -396,12 +449,12 @@ class KeyRingsUI(object):
                     if dialog.exec_() == QDialog.Accepted:
                         password = dialog.password_line_edit.text()
                         if not self.passwordCorrect(hex_data, password):
-                            self.errorLabel.setText("Incorect password for: " + username)
+                            self.errorLabelPrivate.setText("Incorect password for: " + username)
                             return
                         else:
                             pem_data = self.fomHexToPam(hex_data, password)
 
-                self.errorLabel.setText("")
+                self.errorLabelPrivate.setText("")
                 file_dialog = QFileDialog()
                 folder_path = file_dialog.getExistingDirectory(None, "Select Folder", "")
 

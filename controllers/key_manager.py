@@ -9,7 +9,6 @@ from PyQt5 import QtWidgets
 from Crypto import Random
 from cryptography.hazmat.primitives import serialization
 
-
 from resources.ui_Key_Manager import KeyManagerUI
 
 
@@ -70,7 +69,6 @@ class KeyManagerWindow(QtWidgets.QDialog):
         key_manager_window.exec_()
 
     def StoreInPublicKeyRing(self, public_key, keyID):
-
         userID = self.ui.textbox_Username.text() + "[0x" + keyID[-8:] + "]"
 
         key_pairs = {
@@ -132,6 +130,7 @@ class KeyManagerWindow(QtWidgets.QDialog):
         #     print("Invalid password:", e)
 
     def StoreInPrivateKeyRing(self, public_key, private_key, keyID):
+
         userID = self.ui.textbox_Username.text() + "[0x" + keyID[-8:] + "]"
         password = self.ui.textbox_Password.text()
 
@@ -160,6 +159,22 @@ class KeyManagerWindow(QtWidgets.QDialog):
         # Write the updated JSON data back to the file
         with open(file_path, "w") as file:
             json.dump(existing_data, file, indent=4)
+
+    def usernameALreadyExists(self, username, type):
+        if type == "public":
+            with open('publicKeyRing.json', 'r') as file:
+                publicKeyRing = json.load(file)
+                for key, item in enumerate(publicKeyRing):
+                    key = list(item.values())[0]
+                    if key['username'] == username:
+                        return True
+        if type == "private":
+            with open('privateKeyRing.json', 'r') as file:
+                publicKeyRing = json.load(file)
+                for key, item in enumerate(publicKeyRing):
+                    key = list(item.values())[0]
+                    if key['username'] == username:
+                        return True
 
     def RSA_generateKeys(self, key_size):
         print("key_size:", key_size)
