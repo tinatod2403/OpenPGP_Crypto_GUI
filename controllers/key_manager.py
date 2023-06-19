@@ -5,6 +5,8 @@ from Crypto.Cipher import CAST
 import rsa
 import os
 import json
+
+from Crypto.PublicKey import DSA, ElGamal
 from PyQt5 import QtWidgets
 from Crypto import Random
 from cryptography.hazmat.primitives import serialization
@@ -58,15 +60,18 @@ class KeyManagerWindow(QtWidgets.QDialog):
             print("Password in KeyManagerWindow:", password)
 
         if algorithm == "RSA":
-            self.RSA_generateKeys(int(key_size))
+            self.generateKeys(int(key_size))
         else:
-            print("NOT IMPLEMENTID BRE")
+            self.generateKeys(int(key_size))
 
         print(algorithm)
 
         self.hide()
         key_manager_window = KeyRingWindow()
         key_manager_window.exec_()
+
+    def StoreInPublicKeyRingElGAmal_DSA(self, public_key, keyID):
+        print(keyID)
 
     def StoreInPublicKeyRing(self, public_key, keyID):
         userID = self.ui.textbox_Username.text() + "[0x" + keyID[-8:] + "]"
@@ -176,20 +181,43 @@ class KeyManagerWindow(QtWidgets.QDialog):
                     if key['username'] == username:
                         return True
 
-    def RSA_generateKeys(self, key_size):
-        print("key_size:", key_size)
-        public_key, private_key = rsa.newkeys(key_size)
+    def generateKeys(self, key_size):
+        if self.ui.dropdown_ALG.currentText() == "RSA":
+            print("key_size:", key_size)
+            public_key, private_key = rsa.newkeys(key_size)
 
-        # Get the keyID
-        keytoHex = public_key.n
+            # Get the keyID
+            keytoHex = public_key.n
 
-        # Convert the modulus to hexadecimal string
-        keyID = (hex(keytoHex)[2:])[-16:]
+            # Convert the modulus to hexadecimal string
+            keyID = (hex(keytoHex)[2:])[-16:]
 
-        print("keyID: ", keyID)
+            print("keyID: ", keyID)
+            self.StoreInPublicKeyRing(public_key, keyID)
+            self.StoreInPrivateKeyRing(public_key, private_key, keyID)
+        else:
+            key = DSA.generate(key_size)
 
-        self.StoreInPublicKeyRing(public_key, keyID)
-        self.StoreInPrivateKeyRing(public_key, private_key, keyID)
+            # Get the private and public keys
+            private_keyDSA = key.export_key()
+            public_keyDSA = key.publickey().export_key()
+            print("tu1:")
+            key = ElGamal.generate(1024, Random.new().read)
+            print("tu2: ",key)
+            print("private_key:", key.has_private())
+            print("public_key: y", key.publickey())
+            private_key_pem = key.export_key()
+            print("tu2:")
+            private_key = ElGamal.import_key(private_key_pem)
+            public_key = private_key.publickey()
+            y = public_key.y
+            g = public_key.g
+            p = public_key.p
+            print("private_key:", private_key)
+            print("public_key: y =", y, ", g =", g, ", p =", p)
+
+            # keyID = (hex(public_key)[2:])[-16:]
+            # self.StoreInPublicKeyRingElGAmal_DSA(public_key,keyID)
 
         # Print the keys
         print("Public key:")
